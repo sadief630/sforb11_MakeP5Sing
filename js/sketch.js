@@ -2,6 +2,7 @@
 // CSC 2364 Bug Squish Project
 // Feb 15 2022
 
+
 let floor;
 let spriteSheet;
 let count = 12;
@@ -26,26 +27,131 @@ function preload(){
   floor = loadImage("images/maxresdefault.png");
 }
 
-let osc = new Tone.AMOscillator(300,'sine','sine').start()
-let gain = new Tone.Gain().toDestination();
-let pan = new Tone.Panner().connect(gain);
-let ampEnv = new Tone.AmplitudeEnvelope({
-  sustain: 0,
-  decay: 1,
-  release: 0.04,
-  attack: .1
-}).connect(pan);
-osc.connect(ampEnv);
+let sounds = new Tone.Players({
+  squish: 'images/Squish.wav',
+  miss: 'images/Miss.wav',
+  spawn: 'images/Spawn.wav',
+  time: 'images/Time.wav'
+}).toDestination();
 
-let noise = new Tone.Noise('brown').start();
-let noiseEnv = new Tone.AmplitudeEnvelope({
-  sustain: .9,
-  decay: .5,
-  release: .03,
-  attack: .01
-}).connect(gain);
-let noiseFilter = new Tone.Filter(300, 'highpass').connect(noiseEnv);
-noise.connect(noiseFilter);
+
+//BEGIN SCREEN MUSIC CODE BLOCK
+let beginSynth = new Tone.PolySynth({
+  envelope: {
+    sustain: .09,
+    release: .02,
+    attack: 0.01
+  }
+}).toDestination();
+let introPattern = new Tone.Pattern((time,note)=>{
+  if(gameState != 'end' && gameState != 'playing'){
+    beginSynth.triggerAttackRelease(note,'8n', time);
+  }
+},[ 
+  ['C3','G4','E4','C4'], 
+  ['G4','C5'],
+  ['C3','G4','E5'], 
+  ['G4','C5'],
+  ['A3','C4','F4','D5'], 
+  ['C4','E5'],
+  ['A3','C5'], 
+  ['C4','F4','A4'],
+  ['A3','C4','E4','A5'], 
+  ['C4','A4','B5'],
+  ['A3','C4','C5'], 
+  ['C4','A4','D5'], 
+  ['G3','D4','C4'], 
+  ['D4','B4','D5'], 
+  ['G3','D4','B4','G4'], 
+  ['D4','B4','D4'], 
+]).start(0);
+//END OF BEGIN SCREEN MUSIC CODE BLOCK
+
+//PLAY SCREEN MUSIC CODE BLOCK
+const playSong = [
+  {'time': '0:0:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:1:0', 'note': 'D3', 'duration': '4n'},
+  {'time': '0:2:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:3:0', 'note': 'D3', 'duration': '4n'},
+
+  {'time': '0:4:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:5:0', 'note': 'D3', 'duration': '4n'},
+  {'time': '0:6:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:7:0', 'note': 'D3', 'duration': '4n'},
+  
+  {'time': '0:8:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:9:0', 'note': 'D3', 'duration': '4n'},
+  {'time': '0:10:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:11:0', 'note': 'D3', 'duration': '4n'},
+  
+  {'time': '0:4:0', 'note': 'A3', 'duration': '2n'},
+  {'time': '0:6:0', 'note': 'B3', 'duration': '2n'},
+  {'time': '0:8:0', 'note': 'C4', 'duration': '2n'},
+  {'time': '0:10:0', 'note': 'B3', 'duration': '2n'},
+  {'time': '0:12:0', 'note': 'G3', 'duration': '2n'},
+  {'time': '0:14:0', 'note': 'D3', 'duration': '2n'},
+
+  {'time': '0:8:0', 'note': 'G3', 'duration': '8n'},
+  {'time': '0:9:0', 'note': 'B4', 'duration': '8n'},
+  {'time': '0:10:0', 'note': 'C5', 'duration': '8n'},
+  {'time': '0:11:0', 'note': 'D4', 'duration': '8n'},
+  {'time': '0:12:0', 'note': 'F4', 'duration': '8n'},
+  {'time': '0:13:0', 'note': 'E4', 'duration': '8n'},
+  {'time': '0:14:0', 'note': 'G4', 'duration': '8n'},
+  {'time': '0:15:0', 'note': 'D4', 'duration': '8n'},
+
+  {'time': '0:12:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:13:0', 'note': 'D3', 'duration': '4n'},
+  {'time': '0:14:0', 'note': 'G2', 'duration': '4n'},
+  {'time': '0:15:0', 'note': 'D3', 'duration': '4n'},
+  
+]
+
+const playTrack = new Tone.Part(function(time,note){
+  beginSynth.triggerAttackRelease(note.note,note.duration,time);
+}, playSong);
+playTrack.loop = true;
+playTrack.loopEnd = "0:16:0";
+//END OF PLAY SCREEN MUSIC CODE BLOCK
+
+// END SCREEN MUSIC CODE BLOCK
+let synth = new Tone.AMSynth({
+  envelope: {
+    sustain: 1,
+    release: 1,
+    attack: 0.02
+  }
+}).toDestination();
+let pattern = new Tone.Pattern((time,note)=>{
+  if(gameState == 'end'){
+    synth.triggerAttackRelease(note,0.25, time);
+  }
+},['D4', 'F4', 'A3', 'F4']).start(0);
+let synthB = new Tone.AMSynth({
+  envelope: {
+    sustain: 1,
+    release: 1,
+    attack: 0.02
+  }
+}).toDestination();
+let patternB = new Tone.Pattern((time,note)=>{
+  if(gameState == 'end'){
+    synthB.triggerAttackRelease(note,0.5, time);
+  }
+},['D2', 'A3']).start(0);
+let synthC = new Tone.FMSynth({
+  envelope: {
+    sustain: .03,
+    release: 1,
+    attack: 0,
+  }
+}).toDestination();
+let patternC = new Tone.Pattern((time,note)=>{
+  if(gameState == 'end'){
+    synthB.triggerAttackRelease(note,0.125, time);
+  } 
+},['D4', 'F4', null, 'A4', 'F4', null,'E4','D4']).start(0);
+// END OF END SCREEN MUSIC CODE BLOCK
 
 function setup() {
   imageMode(CENTER);
@@ -53,31 +159,42 @@ function setup() {
   for(i = 0; i < count; i++){
     bugArray[i] = new Bug(random([spriteSheet, spriteSheet2]), random(100,650), random(100,650), random(1,4), random([-1, 1])); //create array of bugs!
   }
+  
 }
+
 function draw(){
+  introPattern.start();
+  Tone.Transport.start();
   background(255);
   image(floor, 350, 350); //background image
   fill(255);
-  if(gameState == 'wait'){ //TITLE SCREEN
-        textSize(80);
-        textFont('Georgia');
-        text("BUG SQUISH", 100, 250);
-        textFont('monospace');
-        textSize(40);
-        text('Press any key to start', 100, 350);
-        textSize(20);
-        text('Squish as many bugs as possible in 30 seconds!',90,400);
-        image(spriteSheet,150, 500, 70, 70, 200, 0, 200, 200);
-        image(spriteSheet2,250, 500, 70, 70, 200, 0, 200, 200);
-        image(spriteSheet,350, 500, 70, 70, 200, 0, 200, 200);  //images for aesthetic reasons
-        image(spriteSheet2,450, 500, 70, 70, 200, 0, 200, 200);
-        image(spriteSheet,550, 500, 70, 70, 200, 0, 200, 200);
-        if(keyIsPressed || mouseIsPressed){ //Timer Start, Game Start
-          startTime = millis();
-          gameState = 'playing'; //breaks if statement
-        }
+    if(gameState == 'wait'){
+      pattern.start();
+      patternB.start();
+      patternC.start();
+      //TITLE SCREEN
+      textSize(80);
+      textFont('Georgia');
+      text("BUG SQUISH", 100, 250);
+      textFont('monospace');
+      textSize(40);
+      text('Press any key to start', 100, 350);
+      textSize(20);
+      text('Squish as many bugs as possible in 30 seconds!',90,400);
+      image(spriteSheet,150, 500, 70, 70, 200, 0, 200, 200);
+      image(spriteSheet2,250, 500, 70, 70, 200, 0, 200, 200);
+      image(spriteSheet,350, 500, 70, 70, 200, 0, 200, 200);  //images for aesthetic reasons
+      image(spriteSheet2,450, 500, 70, 70, 200, 0, 200, 200);
+      image(spriteSheet,550, 500, 70, 70, 200, 0, 200, 200);
+      if(mouseIsPressed){ //Timer Start, Game Start
+        startTime = millis();
+        gameState = 'playing'; 
+        sounds.player('spawn').start();
+        //breaks if statement, switch to new music
+      }   
   }
   else if(gameState == 'playing'){
+    playTrack.start();
     for(i = 0; i < count ; i++){
       bugArray[i].draw(); //draw all sprites, up to count on the screen at all times
     }
@@ -85,11 +202,18 @@ function draw(){
     let time = timer(); //call timer function to record time
     text('score: ' + numSquished, 500, 40); // score keeper
     text(' time: ' + (30 - time), 10, 40); //time countdown
-    if(time >= 30){
-      gameState = 'end'; //breaks if statement
+    if(time >= 24 && time <= 28){
+      if(frameCount%108==0){
+        sounds.player('time').start();
+      }    
     }
+    if(time >= 30){
+      gameState = 'end';
+      playTrack.stop(); //breaks if statement
+    } 
   }
-  else if(gameState == 'end'){ //GAME OVER SCREEN
+  else if(gameState == 'end'){
+    Tone.Transport.bpm.value = 120;
     textFont('Georgia');
     text('GAME OVER', 260, 300);
     textFont('monospace');
@@ -116,21 +240,26 @@ function timer(){
 }
 
 function mousePressed(){ //determines whether to kill the pressed bug and speed other bugs up
+  let squished = false;
   for(i = 0; i < count ; i++){
     if(bugArray[i].kill() && (grabbedArray[i] == false)){
         grabbedArray[i] = true;
-        ampEnv.triggerAttackRelease('2n');
-          for(j = 0; j < count ; j++){
-            bugArray[j].speed += .1;
-          }
+        if(!squished){
+          sounds.player('squish').start();
+          Tone.Transport.bpm.value += 5; 
+        }
+        squished = true;
+        for(j = 0; j < count ; j++){
+          bugArray[j].speed += .1;
+         
+        }
     }
     else{
-      if(gameState == 'playing'){
-        
-        noiseEnv.triggerAttackRelease('16n');
-      }
       grabbedArray[i] = false;
     }
+  }
+  if(gameState == 'playing' && !squished){
+    sounds.player('miss').start();
   }
 }
 
@@ -175,7 +304,7 @@ class Bug{
     }
 
    if(this.death == frameCount - 80){ //"respawns" bug by resetting stats after certain number of frames
-      this.x = random(100,650);
+      this.x = random([0,700]);
       this.y = random(100,650);
       this.move = random([-1,1]);
       this.facing = this.move;
@@ -184,12 +313,6 @@ class Bug{
     pop();
   }
  
- go(direction){
-    this.move = direction;
-    this.facing = direction;
-    this.sx = 3;
-  }
-
   stop(){
     this.move = 0;
   }
@@ -205,7 +328,6 @@ class Bug{
         this.stop();
         return true;
        }
-
-       return false;
+      return false;
   }
 }
