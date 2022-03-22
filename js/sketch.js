@@ -241,7 +241,7 @@ function timer(){
 function mousePressed(){ //determines whether to kill the pressed bug and speed other bugs up
   let squished = false;
   for(i = 0; i < count ; i++){
-    if(bugArray[i].kill() && (grabbedArray[i] == false)){
+    if(bugArray[i].kill() && (grabbedArray[i] == false) && gameState != 'end'){
         grabbedArray[i] = true;
         if(!squished){
           sounds.player('squish').start(); //if not squished, play squish sound!
