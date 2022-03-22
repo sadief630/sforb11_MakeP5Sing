@@ -164,20 +164,20 @@ function setup() {
 function draw(){
   introPattern.start();
   Tone.Transport.start();
+  pattern.start();
+  patternB.start();
+  patternC.start();
   background(255);
   image(floor, 350, 350); //background image
   fill(255);
     if(gameState == 'wait'){
-      pattern.start();
-      patternB.start();
-      patternC.start();
       //TITLE SCREEN
       textSize(80);
       textFont('Georgia');
       text("BUG SQUISH", 100, 250);
       textFont('monospace');
       textSize(40);
-      text('Press any key to start', 100, 350);
+      text('Click to play', 200, 350);
       textSize(20);
       text('Squish as many bugs as possible in 30 seconds!',90,400);
       image(spriteSheet,150, 500, 70, 70, 200, 0, 200, 200);
@@ -185,7 +185,7 @@ function draw(){
       image(spriteSheet,350, 500, 70, 70, 200, 0, 200, 200);  //images for aesthetic reasons
       image(spriteSheet2,450, 500, 70, 70, 200, 0, 200, 200);
       image(spriteSheet,550, 500, 70, 70, 200, 0, 200, 200);
-      if(mouseIsPressed  | keyIsPressed){ //Timer Start, Game Start
+      if(mouseIsPressed){ //Timer Start, Game Start
         startTime = millis();
         gameState = 'playing'; 
         sounds.player('spawn').start(); //"boop" sound when 
@@ -318,7 +318,7 @@ class Bug{
   kill(){
     if(mouseX > this.x - 30 && mouseX < this.x + 30 &&
        mouseY > this.y - 30 && mouseY < this.y + 30){
-        if(this.grabbed == false){
+        if(this.grabbed == false && gameState != 'end'){
           numSquished++;
           this.death = frameCount;
         }
