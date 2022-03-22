@@ -106,7 +106,6 @@ const playSong = [
   {'time': '0:15:0', 'note': 'D3', 'duration': '4n'},
   
 ]
-
 const playTrack = new Tone.Part(function(time,note){
   beginSynth.triggerAttackRelease(note.note,note.duration,time);
 }, playSong);
@@ -114,7 +113,7 @@ playTrack.loop = true;
 playTrack.loopEnd = "0:16:0";
 //END OF PLAY SCREEN MUSIC CODE BLOCK
 
-// END SCREEN MUSIC CODE BLOCK
+// GAME OVER SCREEN MUSIC CODE BLOCK
 let synth = new Tone.AMSynth({
   envelope: {
     sustain: 1,
@@ -151,7 +150,7 @@ let patternC = new Tone.Pattern((time,note)=>{
     synthB.triggerAttackRelease(note,0.125, time);
   } 
 },['D4', 'F4', null, 'A4', 'F4', null,'E4','D4']).start(0);
-// END OF END SCREEN MUSIC CODE BLOCK
+// END OF GAME OVER SCREEN MUSIC CODE BLOCK
 
 function setup() {
   imageMode(CENTER);
@@ -186,10 +185,10 @@ function draw(){
       image(spriteSheet,350, 500, 70, 70, 200, 0, 200, 200);  //images for aesthetic reasons
       image(spriteSheet2,450, 500, 70, 70, 200, 0, 200, 200);
       image(spriteSheet,550, 500, 70, 70, 200, 0, 200, 200);
-      if(mouseIsPressed){ //Timer Start, Game Start
+      if(mouseIsPressed  | keyIsPressed){ //Timer Start, Game Start
         startTime = millis();
         gameState = 'playing'; 
-        sounds.player('spawn').start();
+        sounds.player('spawn').start(); //"boop" sound when 
         //breaks if statement, switch to new music
       }   
   }
@@ -204,12 +203,12 @@ function draw(){
     text(' time: ' + (30 - time), 10, 40); //time countdown
     if(time >= 24 && time <= 28){
       if(frameCount%108==0){
-        sounds.player('time').start();
+        sounds.player('time').start(); //if the time nears end, a ticking clock will begin to play.
       }    
     }
     if(time >= 30){
       gameState = 'end';
-      playTrack.stop(); //breaks if statement
+      playTrack.stop(); //breaks if statement and switches to end sequence
     } 
   }
   else if(gameState == 'end'){
@@ -245,13 +244,12 @@ function mousePressed(){ //determines whether to kill the pressed bug and speed 
     if(bugArray[i].kill() && (grabbedArray[i] == false)){
         grabbedArray[i] = true;
         if(!squished){
-          sounds.player('squish').start();
-          Tone.Transport.bpm.value += 5; 
+          sounds.player('squish').start(); //if not squished, play squish sound!
+          Tone.Transport.bpm.value += 5; //INCREASE BACKGROUND MUSIC BPM!!
         }
         squished = true;
         for(j = 0; j < count ; j++){
-          bugArray[j].speed += .1;
-         
+          bugArray[j].speed += .1; //increase bug speed by .1 with every score increase
         }
     }
     else{
